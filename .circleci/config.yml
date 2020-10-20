@@ -1,13 +1,118 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
-version: 2.1
-# Use a package of configuration called an orb.
-orbs:
-  # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
-workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
-    jobs:
-      - welcome/run
+
+#Script criado pelo analista Felipe Barbosa para facilitar o reset e desbloqueio de contas no AD
+#13/10/2020 - Editado por Edson Freitas
+#20/10/2020 - Editado por Felipe R. Barbosa - Add comando que remove computador do AD.
+
+#Add biblioteca necessaria para exibição da menssagem e exibe a mesma através de um POP-UP de aviso.
+Add-Type -AssemblyName PresentationCore,PresentationFramework
+
+$Date = Get-Date 
+
+#$choice = Read-Host -Prompt 'Qual alteracao deseja realizar, Computador ou Login?'
+$choice = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+$choice.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Computador'))
+$choice.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Login'))
+
+
+$Decisao = $Host.UI.PromptForChoice($titulo, $questao, $choice, 0)
+if ($Decisao -eq 0) {
+
+    #Set Variavel para coletar o computador que vamos remover do AD.
+    $Computeremove = Read-Host -Prompt 'Informe o nome do computador que será removido do AD'
+    $titulo   = 'Remover computador do AD!'
+    $questao = 'Tem certeza que quer remover o computador '+$Computeremove+'?'
+    $choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+    $choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Sim, excluir conta do computador'))
+    $choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Nao, manter conta do computador'))
+    
+    #Caso seja escolhida essa opção o computador será removido do AD
+    if ($Decisao -eq 0) {
+        Remove-ADComputer -Confirm -Identity "$Computeremove" 
+    [System.Windows.MessageBox]::Show($Computeremove, 'Dados do Computador que foi removido')
+    Write-Output "Quem deletou a conta do computador $Computeremove - $env:UserName - $Date" | Out-File \\domhcor.local\comum$\inventario$\Admin_Ad_ServiceDesk\$Computeremove.txt -Append
+   
+    #Email enviado para informar a remoção
+    $username = "edcomum@hcor.com.br"
+    $password = "1234567890"
+    $sstr = ConvertTo-SecureString -string $password -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential -argumentlist $username, $sstr
+    $body = "O Computador $computeremove foi REMOVIDO <br/> Data do desbloqueio: $Date <br/> Usuario reponsavel: $env:UserName <br/> Computador utilizado $env:COMPUTERNAME <br/> $Antes"
+    Send-MailMessage -To "esfreitas@hcor.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Remocao de conta do PC (AD) - Computador $Computeremove" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
+    }
+    if ($Decisao -eq 1) {
+        [System.Windows.MessageBox]::Show($Computeremove, 'Acao cancelada')
+    }
+}
+
+exit
+
+
+if ($Decisao -eq 1){
+#Add biblioteca necessaria para exibição da menssagem e exibe a mesma através de um POP-UP de aviso.
+[System.Windows.MessageBox]::Show('Atencao! 
+A utilizacao desta ferramenta esta sendo monitorada pode impactar diretamente na rotina de trabalho do colaborador. 
+Confirme com exatidao os dados de login do usuario que quer resetar a senha.
+
+A senha padrao definida sera 1234567890
+
+Essa acao esta sendo registrada em rede e um e-mail sera enviado reportando aos administradores','Execucao Controlada')}
+
+#Set Variavel para coletar o ususario que vamos alterar a senha.
+$UserLogin = Read-Host -Prompt 'Informe o login para alteracao da senha'
+
+$ValidaUser = (Get-ADuser -Identity ($UserLogin) -Properties Name, Description, Office, UserPrincipalName, Displayname  | Select-Object Displayname, SamAccountName, Description, Office | format-List) | Out-String
+$NomeCompleto = (Get-ADuser -Identity ($UserLogin) -Properties Name, Description, Office, UserPrincipalName, Displayname  | Select-Object Displayname | format-List) | Out-String
+[System.Windows.MessageBox]::Show($ValidaUser, 'Dados do usuario que voce ira alterar')
+
+$title    = 'Reset de senha de usuario!'
+$question = 'Tem certeza que quer resetar a senha do usuario '+$UserLogin+' - '+$NomeCompleto+'?' 
+
+$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Sim, Resetar a senha'))
+$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Desbloquear, Desbloquear usuario sem trocar senha'))
+$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Cancelar, Cancelar acao'))
+
+
+$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+if ($decision -eq 0) {
+    Write-Host 'Senha resetada e usuario desbloqueado'
+Write-Output "Quem resetou ou tentou resetar a senha do usuario $UserLogin - $env:UserName - $Date" | Out-File \\domhcor.local\comum$\inventario$\Admin_Ad_ServiceDesk\$UserLogin.txt -Append
+Get-ADuser -Identity "$UserLogin" | Out-File \\domhcor.local\comum$\inventario$\Admin_Ad_ServiceDesk\$UserLogin.txt -Append
+
+
+#Valida se o Login do colaborador esta bloqueado.
+#Desbloqueia o Login do colaborador.
+if (Get-ADUser -Identity "$UserLogin" -Properties * | Select-Object Name, LockedOut){Unlock-ADAccount $UserLogin}
+else {[System.Windows.MessageBox]::Show("LOGIN DESBLOQUEADO")}
+
+#Executa a ação para troca da senha
+Set-ADAccountPassword -Identity $UserLogin -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "1234567890" -Force) | Out-File \\domhcor.local\comum$\inventario$\Admin_Ad_ServiceDesk\$env:UserName.txt -Append
+Set-ADUser -Identity $UserLogin -ChangePasswordAtLogon $true
+
+
+$username = "edcomum@hcor.com.br"
+$password = "1234567890"
+$sstr = ConvertTo-SecureString -string $password -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential -argumentlist $username, $sstr
+$body = "O login de rede $UserLogin - $NomeCompleto  foi desbloqueado <br/> Data do desbloqueio: $Date <br/> Usuario reponsavel: $env:UserName <br/> Computador utilizado $env:COMPUTERNAME <br/> $Antes"
+Send-MailMessage -To "esfreitas@hcor.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Alteracao de senha - Usuario $UserLogin" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
+}
+
+if ($decision -eq 1) 
+    {
+        Write-Host 'Usuario desbloqueado'
+        #Valida se o Login do colaborador esta bloqueado.
+        #Desbloqueia o Login do colaborador.
+        if (Get-ADUser -Identity "$UserLogin" -Properties * | Select-Object Name, LockedOut){Unlock-ADAccount $UserLogin} else {[System.Windows.MessageBox]::Show("LOGIN DESBLOQUEADO")}  
+        $username = "edcomum@hcor.com.br"
+        $password = "1234567890"
+        $sstr = ConvertTo-SecureString -string $password -AsPlainText -Force
+        $cred = New-Object System.Management.Automation.PSCredential -argumentlist $username, $sstr
+        $body = "O login de rede $UserLogin - $NomeCompleto  foi desbloqueado <br/> Data do desbloqueio: $Date <br/> Usuario reponsavel: $env:UserName <br/> Computador utilizado $env:COMPUTERNAME <br/> $Antes"
+        Send-MailMessage -To "esfreitas@hcor.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Desbloqueio de conta AD - Usuario $UserLogin" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
+     }
+
+if ($decision -eq 3) 
+    {
+        Write-Host 'Acao 3, nenhuma mudanca foi realizada'
+    }
