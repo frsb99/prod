@@ -12,11 +12,11 @@ color 0A
 
 date /t
 
-Set Deployserver0=\\help27842
-Set DeployServer1=\\domhcor.local\comum$\setup$
-Set DeployServer2=\\filesv12
-Set DeployServer3=\\domhcor.local\comum$
-Set DeployServer4=\\filesv1
+Set Deployserver0=\\SRV01
+Set DeployServer1=\\SRV02
+Set DeployServer2=\\SRV03
+Set DeployServer3=\\SRV04
+Set DeployServer4=\\SRV04
 
 dir I:\ | FIND /i "Por_Maquina"
 if %errorlevel%==1 goto MAP
@@ -38,11 +38,11 @@ echo oShell.NameSpace("U:\").Self.Name = "PROD$" >> %userprofile%\Desktop\Drive_
 :MAP
 Net Use * /Del /Yes
 
-Net use I: %DeployServer3%\inventario$
-Net use S: %DeployServer2%\ServiceDesk\Eximia
-Net use T: %DeployServer4%\transfer      
+Net use I: %DeployServer3%\Compartilhamento1
+Net use S: %DeployServer2%\Compartilhamento2
+Net use T: %DeployServer4%\Compartilhamento3
 Net use V: %DeployServer1%
-Net use U: %DeployServer0%\prod$
+Net use U: %DeployServer0%
 
 
 cd %userprofile%\Desktop
@@ -311,7 +311,7 @@ cls
 echo   ====================================
 echo   #   Remove Computador do AD (PS)   #
 echo   ====================================
-\\help27842\prod$\SCRIPTS_V1\Scripts_V4\Excluir_Computador_AD_v1.exe
+\\PC\prod$\SCRIPTS_V1\Scripts_V4\Excluir_Computador_AD_v1.exe
 cls
 goto menu
 
