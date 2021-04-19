@@ -3,10 +3,10 @@ Start-Transcript -path '\\domhcor.local\comum$\inventario$\Atualiza_Senior\Atual
 
 
 #$outFileName="C:\Temp\PC_RONDA-done.TXT"
-$inFileName="\\filesv12\serviceDesk\Senior_Atualiza\PC_RONDA.csv"
+$inFileName="\\SERVIDOR\COMPARTILHAMENTO\Senior_Atualiza\PC_RONDA.csv"
 $computador=Import-Csv $inFileName
-$DeploySenior='\\filesv12\serviceDesk\Senior_Atualiza\Atalhos\*.lnk'
-$DeploySeniorCTRL='\\filesv12\serviceDesk\Senior_Atualiza\inst.ctrl'
+$DeploySenior='\\SERVIDOR\COMPARTILHAMENTO\Senior_Atualiza\Atalhos\*.lnk'
+$DeploySeniorCTRL='\\SERVIDOR\COMPARTILHAMENTO\Senior_Atualiza\inst.ctrl'
 
 ForEach ($_ in $computador.computer){
 
