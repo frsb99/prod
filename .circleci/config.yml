@@ -37,7 +37,7 @@ if ($Decisao -eq 0) {
     $sstr = ConvertTo-SecureString -string $password -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential -argumentlist $username, $sstr
     $body = "O Computador $computeremove foi REMOVIDO <br/> Data do desbloqueio: $Date <br/> Usuario reponsavel: $env:UserName <br/> Computador utilizado $env:COMPUTERNAME <br/> $Antes"
-    Send-MailMessage -To "esfreitas@hcor.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Remocao de conta do PC (AD) - Computador $Computeremove" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
+    Send-MailMessage -To "email@domain.com.brr" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Remocao de conta do PC (AD) - Computador $Computeremove" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
     }
     if ($Decisao -eq 1) {
         [System.Windows.MessageBox]::Show($Computeremove, 'Acao cancelada')
@@ -95,7 +95,7 @@ $password = "1234567890"
 $sstr = ConvertTo-SecureString -string $password -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential -argumentlist $username, $sstr
 $body = "O login de rede $UserLogin - $NomeCompleto  foi desbloqueado <br/> Data do desbloqueio: $Date <br/> Usuario reponsavel: $env:UserName <br/> Computador utilizado $env:COMPUTERNAME <br/> $Antes"
-Send-MailMessage -To "esfreitas@hcor.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Alteracao de senha - Usuario $UserLogin" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
+Send-MailMessage -To email@domain.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Alteracao de senha - Usuario $UserLogin" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
 }
 
 if ($decision -eq 1) 
@@ -109,7 +109,7 @@ if ($decision -eq 1)
         $sstr = ConvertTo-SecureString -string $password -AsPlainText -Force
         $cred = New-Object System.Management.Automation.PSCredential -argumentlist $username, $sstr
         $body = "O login de rede $UserLogin - $NomeCompleto  foi desbloqueado <br/> Data do desbloqueio: $Date <br/> Usuario reponsavel: $env:UserName <br/> Computador utilizado $env:COMPUTERNAME <br/> $Antes"
-        Send-MailMessage -To "esfreitas@hcor.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Desbloqueio de conta AD - Usuario $UserLogin" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
+        Send-MailMessage -To "email@domain.com.br" -from "Alertas_AD_ServiceDesk@hcor.com.br" -Subject "Desbloqueio de conta AD - Usuario $UserLogin" -Body $body -BodyAsHtml -Cc fsbarbosa@hcor.com.br -smtpserver 191.1.1.66 -Credential $cred -Port 25
      }
 
 if ($decision -eq 3) 
