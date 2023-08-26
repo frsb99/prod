@@ -1,0 +1,13 @@
+#!/bin/bash
+
+interno=$(ping -c 2 XXX.XXX.XXX.XXX 2>&1 | grep "A rede está fora de alcance")
+
+if [ -n "$interno" ]; then
+    echo "A rede está fora de alcance."
+    wg-quick up wg0
+    hostpublico=$(host -4 myip.opendns.com resolver1.opendns.com | grep "myip.opendns.com has" | awk '{print $4}')
+    echo "Seu IP Público é: $hostpublico"
+    ping -c 2 XXX.XXX.XXX.XXX
+else
+    echo "A rede está acessível." 
+fi
