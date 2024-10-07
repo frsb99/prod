@@ -1,0 +1,60 @@
+@echo off
+
+Net Use * /Del /yes
+
+Set DeployServer=\\"IP AQUI"
+Set DeployTotvs=\\"IP AQUI"
+
+Net time %DeployServer% /yes
+
+if exist c:\Smartclient\ GOTO :XCOPY
+if not exist c:\Smartclient mkdir c:\Smartclient\
+
+
+if exist \\%computername%\c$\Smartclient\TOTVS.ico GOTO :DELLNK 
+
+if not exist \\%computername%\c$\Smartclient\TOTVS.ico  mkdir C:\Smartclient | xcopy "%DeployServer%\PUBLICO$\Smartclient\*.*" \\%computername%\c$\Smartclient\ /y
+if exist %userprofile%\Desktop\TOTVS.lnk   
+
+:DELLNK
+del %userprofile%\Desktop\TOTVS*.lnk
+if not exist %userprofile%\Desktop\TOTVS.lnk  Mklink "%userprofile%\Desktop\TOTVS" "C:\Smartclient\smartclient.exe"
+
+:XCOPY
+xcopy %DeployServer%\PUBLICO$\atalho\TOTVS.lnk %userprofile%\Desktop\ /y
+
+if exist %DeployServer%\USUARIOS$\%username% GOTO :MAP 
+if not exist %DeployServer%\USUARIOS$\%username% mkdir %DeployServer%\USUARIOS$\%username% 
+
+if %username%=="Login especifico se houver" GOTO :GESTAO
+if %username%=="Login especifico se houver" GOTO :GESTAO
+if %username%==wradm2000_ GOTO :GESTAO
+if %username%=="Login especifico se houver" GOTO :USUARIOS
+
+:GESTAO
+Net Use M: %DeployServer%\USUARIOS$
+echo oShell.NameSpace("M:\").Self.Name = "GESTAO" >> %userprofile%\Desktop\Drive_Rename.vbs
+
+Net Use W: %DeployServer%\USUARIOS$
+echo oShell.NameSpace("W:\").Self.Name = "COLABORADORES" >> %userprofile%\Desktop\Drive_Rename.vbs
+
+:MAP
+Net Use P: %DeployServer%\PUBLICO$
+Net Use S: %DeployServer%\ADMINISTRATIVO$
+Net Use U: %DeployServer%\USUARIOS$\%username%
+
+start %DeployServer%\Inventario$\KIX32.exe %DeployServer%\Inventario$\Inventario.kix
+start %DeployServer%\Inventario$\List_Map_Printers_v3.vbs
+
+echo Set oShell = CreateObject("Shell.Application") >> %userprofile%\Desktop\Drive_Rename.vbs
+echo oShell.NameSpace("P:\").Self.Name = "PUBLICO" >> %userprofile%\Desktop\Drive_Rename.vbs
+echo oShell.NameSpace("S:\").Self.Name = "ADMINISTRATIVO" >> %userprofile%\Desktop\Drive_Rename.vbs
+echo oShell.NameSpace("U:\").Self.Name = "%username%" >> %userprofile%\Desktop\Drive_Rename.vbs
+
+
+
+cd %userprofile%\Desktop
+
+%userprofile%\Desktop\Drive_Rename.vbs
+
+del %userprofile%\Desktop\Drive_Rename.vbs
