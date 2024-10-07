@@ -1,0 +1,29 @@
+@echo off
+
+REM Nome do Servidor onde tem a instalação do OCS INVENTARY 2.9
+set DeployServer=\\"IPSERVIDOR"
+set Deploylog=\\"Caminho para log"
+
+
+REM VERIFICA SE OCS INVENTARY 2.9 ESTA INSTALADO
+
+if exist "C:\ProgramData\OCS Inventory NG\Agent\ocsinventary.ini" GOTO SAIR_OK
+if not exist "C:\ProgramData\OCS Inventory NG\Agent\ocsinventary.ini" GOTO SAIR_Falha
+
+REM *********************************************************************
+
+xcopy /c /y /e /v /f /i %DeployServer%\suporte$\Softwares\OCSocsinventary.ini "\\%computername%\c$\ProgramData\OCS Inventory NG\Agent\" 
+
+xcopy /c /y /e /v /f /i %DeployServer%\suporte$\Softwares\OCScacert.pem "\\%computername%\c$\Program Files\OCS Inventory Agent" 
+
+if \\%computername%\c$\ProgramData\OCS Inventory NG\Agent\ocsinventary.ini  
+
+
+:SAIR_Falha
+echo %computername% > %Deploylog%\%username%_Com_OCS.txt
+exit
+
+
+:SAIR_OK
+echo %computername% > %Deploylog%\%username%_Com_OCS.txt
+exit
