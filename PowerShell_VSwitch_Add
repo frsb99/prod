@@ -1,0 +1,1 @@
+New-VMSwitch -Name "{Name your new vSwitch here}" -NetAdapterName "{NIC Team name you created previously}" -AllowNetLbfoTeams $true -AllowManagementOS $true
